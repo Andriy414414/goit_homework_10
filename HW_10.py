@@ -1,17 +1,16 @@
 from collections import UserDict
 
 
-class AddressBook(UserDict):
-    def add_record(self, record):
-        self.data[record.name.value] = record
-
-    def find_record(self, value):
-        return self.data.get(value)
-
-
 class Field:
     def __init__(self, value):
         self.value = value
+
+    def __eq__(self, other):
+        if hasattr(other, "value"):
+            value = other.value
+        else:
+            value = other
+        return self.value == value
 
 
 class Name(Field):
@@ -30,16 +29,33 @@ class Record:
         self.phones = [phone] if phone else []
 
     def add_phone(self, phone: Phone):
-        phone_number = Phone(phone)
-        if phone_number not in self.phones:
-            self.phones.append(phone_number)
+        if phone in self.phones:
+            raise ValueError(f"phone: {phone} is already in record")
+        self.phones.append(phone)
 
     def delete_phone(self, phone):
-        self.phones.remove(phone)
+        try:
+            self.phones.remove(phone)
+        except ValueError:
+            raise ValueError(f"phone: {phone} not exists")
 
     def edit_phone(self, old_phone: Phone, new_phone: Phone):
-        index = self.phones.index(old_phone)
-        self.phones[index] = new_phone
+        try:
+            index = self.phones.index(old_phone)
+            self.phones[index] = new_phone
+        except ValueError:
+            raise ValueError(f"old phone: {phone} not exists")
+
+
+class AddressBook(UserDict):
+    def add_record(self, record: Record):
+        self.data[record.name.value] = record
+
+    def find_record(self, key_name: str):
+        result = self.data.get(key_name)
+        if self.data.get(key_name) == None:
+            raise ValueError("There isn't such record")
+        return result
 
 
 if __name__ == "__main__":
